@@ -237,6 +237,9 @@ func (wishPost *WishPost) GetTracking(wishPostGetTrackingRequest *WishPostGetTra
 	return resp
 }
 
+/**
+获取仓库
+*/
 func (wishPost *WishPost) GetWarehouse(request *WishPostWarehouseRequest) *goCommon.Resp {
 	m := map[string]string{
 		"authorization": "Bearer " + wishPost.Accesstoken,
@@ -260,13 +263,126 @@ func (wishPost *WishPost) GetWarehouse(request *WishPostWarehouseRequest) *goCom
 		[]byte{},
 	}
 	resp := wHttp.Post()
-	wishPostAnnouncementResponse := &WishPostAnnouncementResponse{}
-	json.Unmarshal([]byte(resp.Data), wishPostAnnouncementResponse)
-	if wishPostAnnouncementResponse.Code != 0 {
-		resp.Message = wishPostAnnouncementResponse.Message
-		resp.HttpCode = wishPostAnnouncementResponse.Code
+	wishPostWarehouseResponse := &WishPostWarehouseResponse{}
+	json.Unmarshal([]byte(resp.Data), wishPostWarehouseResponse)
+	if wishPostWarehouseResponse.Code != 0 {
+		resp.Message = wishPostWarehouseResponse.Message
+		resp.HttpCode = wishPostWarehouseResponse.Code
 	}
-	res, _ := json.Marshal(wishPostAnnouncementResponse)
+	res, _ := json.Marshal(wishPostWarehouseResponse)
+	resp.Data = string(res)
+	return resp
+}
+
+/**
+取消订单
+*/
+func (wishPost *WishPost) CancelOrders(request *WishPostCancelOrderRequest) *goCommon.Resp {
+	m := map[string]string{
+		"authorization": "Bearer " + wishPost.Accesstoken,
+		"Content-Type":  wishPost.ContentType,
+	}
+	a := map[string]string{
+		"Accept": "application/json",
+		//"Accept": "text/plain",
+	}
+	param, _ := json.Marshal(request)
+	req := string(param)
+	var wHttp = http.Http{
+		url + "/api/v3/cancel_orders",
+		"",
+		"",
+		m,
+		a,
+		req,
+		10,
+		"",
+		[]byte{},
+	}
+	resp := wHttp.Post()
+	wishPostCancelOrderResponse := &WishPostCancelOrderResponse{}
+	json.Unmarshal([]byte(resp.Data), wishPostCancelOrderResponse)
+	if wishPostCancelOrderResponse.Code != 0 {
+		resp.Message = wishPostCancelOrderResponse.Message
+		resp.HttpCode = wishPostCancelOrderResponse.Code
+	}
+	res, _ := json.Marshal(wishPostCancelOrderResponse)
+	resp.Data = string(res)
+	return resp
+}
+
+/**
+获取订单状态
+*/
+func (wishPost *WishPost) GetOrder(request *WishPostOrderStatusRequest) *goCommon.Resp {
+	m := map[string]string{
+		"authorization": "Bearer " + wishPost.Accesstoken,
+		"Content-Type":  wishPost.ContentType,
+	}
+	a := map[string]string{
+		"Accept": "application/json",
+		//"Accept": "text/plain",
+	}
+	param, _ := json.Marshal(request)
+	req := string(param)
+	var wHttp = http.Http{
+		url + "/api/v3/order_status",
+		"",
+		"",
+		m,
+		a,
+		req,
+		10,
+		"",
+		[]byte{},
+	}
+	resp := wHttp.Post()
+	wishPostOrderStatusResponse := &WishPostOrderStatusResponse{}
+	json.Unmarshal([]byte(resp.Data), wishPostOrderStatusResponse)
+	if wishPostOrderStatusResponse.Code != 0 {
+		resp.Message = wishPostOrderStatusResponse.Message
+		resp.HttpCode = wishPostOrderStatusResponse.Code
+	}
+	res, _ := json.Marshal(wishPostOrderStatusResponse)
+	resp.Data = string(res)
+	return resp
+}
+
+/**
+创建物流单
+*/
+func (wishPost *WishPost) CreateOrder(request *WishPostCreateOrderRequest) *goCommon.Resp {
+	m := map[string]string{
+		"authorization": "Bearer " + wishPost.Accesstoken,
+		"Content-Type":  wishPost.ContentType,
+	}
+	a := map[string]string{
+		"Accept": "application/xml",
+		//"Accept": "text/plain",
+	}
+	output, err := xml.MarshalIndent(request, " ", " ")
+	if err != nil {
+		resp := &goCommon.Resp{}
+		resp.Code = -1
+		resp.Message = err.Error()
+		return resp
+	}
+	req := string(output)
+	var wHttp = http.Http{
+		url + "/api/v2/create_order",
+		"",
+		"",
+		m,
+		a,
+		req,
+		10,
+		"",
+		[]byte{},
+	}
+	resp := wHttp.Post()
+	wishPostCreateOrderResponse := &WishPostCreateOrderResponse{}
+	xml.Unmarshal([]byte(resp.Data), wishPostCreateOrderResponse)
+	res, _ := json.Marshal(wishPostCreateOrderResponse)
 	resp.Data = string(res)
 	return resp
 }
